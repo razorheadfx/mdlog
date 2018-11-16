@@ -1,0 +1,13 @@
+[package]
+name = "mdlog"
+version = "0.1.0"
+authors = ["felix girke <\"felix.girke@tu-dortmund.de\">"]
+edition = "2018"
+
+[dependencies]
+chrono = "0.4.6"
+structopt = "0.2.13"
+
+[[bin]]
+name = "mdlog"
+path = "src/mdlog.rs"
