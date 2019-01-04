@@ -1,7 +1,10 @@
 # mdlog - markdown logbook/journaling made easier
 
 ## TODO
-- Keep in touch with people: draw names from a csv file named ```people.csv``` (if it exists) and randomly adds them as call todos for generated templates 
+- Keep in touch with people: draw names from a csv file named ```people.csv``` (if it exists) and randomly adds them as call todos for generated templates
+  - use the current timestamp as seed for the rng
+  - 35% chance for a call; uniform probability for each person  
+  
 ```
 # people.csv
 # \n used as delimiter
@@ -9,6 +12,7 @@ Jacques Daniel
 Johnathan Strider
 ...
 ```
+
 ```
 # mdlog output
 ## Fri, 07.12.2018
@@ -20,8 +24,9 @@ Johnathan Strider
 ## Sun, 09.12.2018
 - TODO: Call Johnathan Strider
 ```
-  - use the current timestamp as seed for the rng
-  - 35% chance for a call; uniform probability for each person
+
+
+
 - find TODOS: build simple parser and output generator to list todos and their associated tasks
 ```
 # mdlog example file
