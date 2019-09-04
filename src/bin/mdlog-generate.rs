@@ -1,8 +1,8 @@
 extern crate chrono;
-extern crate mdlog;
 extern crate structopt;
+extern crate mdlog;
 
-use crate::chrono::{Datelike, Local, NaiveDate, Weekday};
+use chrono::{Datelike, Local, NaiveDate, Weekday};
 use structopt::StructOpt;
 
 use std::collections::HashMap;
