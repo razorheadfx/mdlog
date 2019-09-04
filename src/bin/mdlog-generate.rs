@@ -1,6 +1,6 @@
 extern crate chrono;
-extern crate structopt;
 extern crate mdlog;
+extern crate structopt;
 
 use chrono::{Datelike, Local, NaiveDate, Weekday};
 use structopt::StructOpt;
