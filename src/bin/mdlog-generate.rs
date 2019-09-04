@@ -44,11 +44,11 @@ struct BD {
     )]
     bd_file: PathBuf,
     /// Whether to includes birthdates of people mentioned in the birthday file when generating templates.
-    #[structopt(short = "bd", long = "generate-birthdays")]
+    #[structopt(short = "b", long = "generate-birthdays")]
     include_birthdays: bool,
     /// Whether to randomly include a todo to call someone from the birthday file when generating templates.
     /// Makes it a little easier to stay in touch
-    #[structopt(short = "ca", long = "generate-calls")]
+    #[structopt(short = "c", long = "generate-calls")]
     gen_calls: bool,
 }
 
