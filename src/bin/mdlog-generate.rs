@@ -1,8 +1,11 @@
 extern crate chrono;
 extern crate mdlog;
+extern crate rand;
 extern crate structopt;
 
+
 use chrono::{Datelike, Local, NaiveDate, Weekday};
+use rand::prelude::{self, Rng, SliceRandom};
 use structopt::StructOpt;
 
 use std::collections::HashMap;
@@ -54,6 +57,7 @@ struct BD {
 
 /// The date formatting to use
 const DATE_FMT: &str = "%d.%m.%Y";
+const CALL_PROBABILITY : f64 = 0.1;
 
 /// always print to stderr because we do use stdout for the generated templates
 fn main() {
@@ -80,6 +84,8 @@ fn main() {
         input.n_weeks, input.week, year
     );
 
+
+    // pull in the birthday file
     let bds: HashMap<(u32, u32), Vec<Person>> =
         if input.bd_config.include_birthdays || input.bd_config.gen_calls {
             read_and_prep_birthday_file(&input.bd_config.bd_file)
@@ -87,8 +93,11 @@ fn main() {
             HashMap::new()
         };
 
-    // correct for 1 week so this prints 1 week instead of 2 when given 1 as an input
+    // init for the call stuff
+    let people : Vec<_> = bds.values().flat_map(|x|x).collect();
+    let mut rng = rand::thread_rng();
 
+    // correct for 1 week so this prints 1 week instead of 2 when given 1 as an input
     let mut day = NaiveDate::from_isoywd(year, input.week, Weekday::Mon);
     let last_day = {
         if input.week + input.n_weeks - 1 > 52 {
@@ -132,15 +141,12 @@ fn main() {
                 })
             }
         }
-        if input.bd_config.gen_calls {
-            // TOOD: pull in rand
-            // TODO: create a vec of people
-            // TODO: pick a bool with a certain probability
-            // TODO: if the bool is true, pick a random person rome the list
-            // TODO: println!("- TODO: Call {}", person)
-            unimplemented!()
+        if input.bd_config.gen_calls && !people.is_empty() && rng.gen_bool(CALL_PROBABILITY){
+            let person_idx = rng.gen_range(0usize, people.len()+1);
+            let person = people[person_idx];
+            println!("- TODO: Call {}",person.name);
         }
-        // insert an empty line
+        // insert an empty line (uses platform specific line end)
         #[allow(clippy::println_empty_string)]
         println!();
 
