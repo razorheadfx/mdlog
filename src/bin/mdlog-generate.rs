@@ -34,11 +34,7 @@ struct Input {
 #[derive(Debug, StructOpt)]
 struct BD {
     /// The yaml file to include birthdays from.
-    /// The file should be in the form of a dict of name, date. Example:
-    /// ```
-    /// Alex: 19.01.2001
-    /// Bob: 20.12.?
-    /// ```
+    /// Refer to [mdlog::parser::load_birthday_file] for details on the format
     #[structopt(
         long = "birthday-file",
         default_value = "birthdays.yml",
@@ -158,7 +154,7 @@ fn main() {
 }
 
 fn read_and_prep_birthday_file(file: &PathBuf) -> HashMap<(u32, u32), Vec<Person>> {
-    let people = match parser::parse_birthdays_yaml(file) {
+    let people = match parser::load_birthday_file(file) {
         Ok(p) => p,
         Err(e) => {
             eprintln!("Failed to parse birthday file with {}", e);

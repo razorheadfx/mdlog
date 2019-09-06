@@ -130,8 +130,6 @@ impl Parser {
     pub fn parse_tasks(&self, log_data: &str) -> io::Result<Vec<Task>> {
         // find toplevel TODOS
         let mut tasks = vec![];
-        // TODO: chain this with an iterator for the task_tag_done, let each indicate
-        // whether its done or not
 
         let todos = log_data
             .match_indices(&self.task_tag_todo)
@@ -248,7 +246,9 @@ impl Parser {
     }
 }
 
-pub fn parse_birthdays_yaml(path: &Path) -> io::Result<Vec<Person>> {
+/// conveniently load the birthday file to get a list of people and their birthdays
+/// see [mdlog::parser::parse_people] for details on the actual format of the file
+pub fn load_birthday_file(path: &Path) -> io::Result<Vec<Person>> {
     let s = {
         let mut s = String::new();
         let mut f = File::open(path)?;
@@ -257,13 +257,64 @@ pub fn parse_birthdays_yaml(path: &Path) -> io::Result<Vec<Person>> {
         s
     };
 
+    parse_people(&s)
+}
+
+/// The birthday file contains people, their birthday (with or without year) and present suggestions.  
+/// The first, mandatory part is dict of ```<name of the person>: <birthday as dd.mm.yyyy>```.  
+/// The second, optional part is separated by a ```# Presents``` and contains a dict of ```<name of the person>: list<presents>```
+///
+/// # Example:
+/// ```
+/// # extern crate chrono;
+/// # fn main(){
+/// use mdlog::types::{Person, Birthday};
+/// use mdlog::parser::parse_people;
+/// use std::collections::HashSet;
+/// use chrono::naive::NaiveDate;
+///
+/// let file_content = "
+///
+///Alex: 19.01.2001
+///Bob Smith: 20.12.?
+///John Johnson: 21.12.1947
+///
+///### Presents
+///Alex:
+///- Salad
+///- Moar Salad
+///
+///Bob Smith:
+///- Bazooka
+///";
+/// // the yaml parser does not guarantee ordering of the output so we need to compare
+/// // this via a set
+/// let peops : HashSet<Person> = parse_people(&file_content).unwrap().into_iter().collect();
+/// let correct : HashSet<Person> = [
+///     Person{
+///         name: "Alex".into(),
+///         birthday: Birthday::KnownYear(NaiveDate::from_ymd(2001,01,19)),
+///         presents : Some(vec!["Salad".into(), "Moar Salad".into()])
+///     },
+///     Person{
+///         name: "Bob Smith".into(),
+///         birthday: Birthday::UnknownYear(12,20),
+///         presents : Some(vec!["Bazooka".into()])
+///     },
+///     Person{
+///         name: "John Johnson".into(),
+///         birthday: Birthday::KnownYear(NaiveDate::from_ymd(1947,12,21)),
+///         presents : None
+///     }
+/// ].iter().cloned().collect();
+/// assert_eq!(&peops, &correct);
+/// # }
+/// ```
+pub fn parse_people(s: &str) -> io::Result<Vec<Person>> {
     let begin_presents = s.find("# Presents");
 
     let birthdays = {
-        let bd_entries_end = begin_presents.unwrap_or({
-            println!("Could not find a Presents section");
-            s.len()
-        });
+        let bd_entries_end = begin_presents.unwrap_or(s.len());
         &s[..bd_entries_end]
     };
 

@@ -8,15 +8,16 @@ pub mod types {
     use chrono::naive::{NaiveDate, NaiveTime};
     use chrono::Datelike;
     use serde::{Deserialize, Serialize};
+    use std::hash::Hash;
 
-    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    #[derive(Serialize, Hash, Clone, Deserialize, Eq, PartialEq, Debug)]
     pub struct Person {
         pub name: String,
         pub birthday: Birthday,
         pub presents: Option<Vec<String>>,
     }
 
-    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    #[derive(Serialize, Hash, Clone, Deserialize, Eq, PartialEq, Debug)]
     pub enum Birthday {
         /// Full Date
         KnownYear(NaiveDate),
@@ -24,7 +25,7 @@ pub mod types {
         UnknownYear(u32, u32),
     }
 
-    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    #[derive(Serialize, Hash, Clone, Deserialize, Eq, PartialEq, Debug)]
     pub struct Task {
         pub msg: String,
         pub subtasks: Vec<Subtask>,
@@ -33,13 +34,13 @@ pub mod types {
         pub is_done: bool,
     }
 
-    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    #[derive(Serialize, Hash, Clone, Deserialize, Eq, PartialEq, Debug)]
     pub struct Subtask {
         pub msg: String,
         pub is_done: bool,
     }
 
-    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    #[derive(Serialize, Hash, Clone, Deserialize, Eq, PartialEq, Debug)]
     pub struct Event {
         pub msg: String,
         pub notes: Vec<String>,
