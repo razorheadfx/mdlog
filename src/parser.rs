@@ -1,4 +1,4 @@
-use crate::types::{Event, Person, Subtask, Task};
+use crate::types::{Birthday, Event, Person, Subtask, Task};
 use chrono::naive::{NaiveDate, NaiveTime};
 
 use std::collections::HashMap;
@@ -283,7 +283,7 @@ pub fn parse_birthdays_yaml(path: &Path) -> io::Result<Vec<Person>> {
                                 name, birthdate
                             )
                         });
-                    (name, date)
+                    (name, Birthday::KnownYear(date))
                 }
                 Some(_pos) => {
                     let mut dm = birthdate
@@ -291,14 +291,13 @@ pub fn parse_birthdays_yaml(path: &Path) -> io::Result<Vec<Person>> {
                         .map(|s| u32::from_str(s).expect("Failed to parse day or month"));
                     let d = dm.next().unwrap();
                     let m = dm.next().unwrap();
-                    let date = NaiveDate::from_ymd(0, m, d);
-                    (name, date)
+                    (name, Birthday::UnknownYear(m, d))
                 }
             }
         })
-        .map(|(name, birthdate)| Person {
+        .map(|(name, birthday)| Person {
             name,
-            birthdate,
+            birthday,
             presents: None,
         })
         .collect();

@@ -3,9 +3,8 @@ extern crate mdlog;
 extern crate rand;
 extern crate structopt;
 
-
 use chrono::{Datelike, Local, NaiveDate, Weekday};
-use rand::prelude::{self, Rng, SliceRandom};
+use rand::prelude::Rng;
 use structopt::StructOpt;
 
 use std::collections::HashMap;
@@ -13,7 +12,7 @@ use std::path::PathBuf;
 use std::process;
 
 use mdlog::parser;
-use mdlog::types::Person;
+use mdlog::types::{Birthday, Person};
 
 #[derive(Debug, StructOpt)]
 struct Input {
@@ -57,7 +56,7 @@ struct BD {
 
 /// The date formatting to use
 const DATE_FMT: &str = "%d.%m.%Y";
-const CALL_PROBABILITY : f64 = 0.1;
+const CALL_PROBABILITY: f64 = 0.1;
 
 /// always print to stderr because we do use stdout for the generated templates
 fn main() {
@@ -84,7 +83,6 @@ fn main() {
         input.n_weeks, input.week, year
     );
 
-
     // pull in the birthday file
     let bds: HashMap<(u32, u32), Vec<Person>> =
         if input.bd_config.include_birthdays || input.bd_config.gen_calls {
@@ -94,7 +92,7 @@ fn main() {
         };
 
     // init for the call stuff
-    let people : Vec<_> = bds.values().flat_map(|x|x).collect();
+    let people: Vec<_> = bds.values().flat_map(|x| x).collect();
     let mut rng = rand::thread_rng();
 
     // correct for 1 week so this prints 1 week instead of 2 when given 1 as an input
@@ -130,21 +128,24 @@ fn main() {
 
         println!("## {:?}, {}", day.weekday(), day.format(DATE_FMT));
         if input.bd_config.include_birthdays {
-            if let Some(people) = bds.get(&(day.month(), day.day())) {
+            let month_day = &(day.month(), day.day());
+            if let Some(people) = bds.get(month_day) {
                 people.iter().for_each(|p| {
-                    println!(
-                        "- TODO: Congratulate {} (Age {})",
-                        p.name,
-                        // FIXME: this may go wrong in some funky situations if there is a different number of weeks per year
-                        (today - p.birthdate).num_weeks() / 52
-                    )
-                })
+                    let age: String = match p.birthday {
+                        Birthday::KnownYear(bd) => Some(today.year() - bd.year()),
+                        _ => None,
+                    }
+                    .map(|a| format!("(Age {})", a))
+                    .unwrap_or_else(|| "".into());
+                    // OPT: not happy with the string allocation here
+                    println!("- TODO: Congratulate {} {}", p.name, age);
+                });
             }
         }
-        if input.bd_config.gen_calls && !people.is_empty() && rng.gen_bool(CALL_PROBABILITY){
-            let person_idx = rng.gen_range(0usize, people.len()+1);
+        if input.bd_config.gen_calls && !people.is_empty() && rng.gen_bool(CALL_PROBABILITY) {
+            let person_idx = rng.gen_range(0usize, people.len());
             let person = people[person_idx];
-            println!("- TODO: Call {}",person.name);
+            println!("- TODO: Call {}", person.name);
         }
         // insert an empty line (uses platform specific line end)
         #[allow(clippy::println_empty_string)]
@@ -168,7 +169,7 @@ fn read_and_prep_birthday_file(file: &PathBuf) -> HashMap<(u32, u32), Vec<Person
     let mut m = HashMap::new();
     people
         .into_iter()
-        .map(|p| ((p.birthdate.month(), p.birthdate.day()), p))
+        .map(|p| ((p.birthday.month(), p.birthday.day()), p))
         .for_each(|p| m.entry(p.0).or_insert_with(|| vec![]).push(p.1));
     m
 }

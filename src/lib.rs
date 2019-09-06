@@ -6,13 +6,22 @@ pub mod parser;
 
 pub mod types {
     use chrono::naive::{NaiveDate, NaiveTime};
+    use chrono::Datelike;
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
     pub struct Person {
         pub name: String,
-        pub birthdate: NaiveDate,
+        pub birthday: Birthday,
         pub presents: Option<Vec<String>>,
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    pub enum Birthday {
+        /// Full Date
+        KnownYear(NaiveDate),
+        /// Year, Month
+        UnknownYear(u32, u32),
     }
 
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -36,6 +45,22 @@ pub mod types {
         pub notes: Vec<String>,
         pub date: NaiveDate,
         pub time: Option<NaiveTime>,
+    }
+
+    impl Birthday {
+        pub fn day(&self) -> u32 {
+            match self {
+                Self::KnownYear(d) => d.day(),
+                Self::UnknownYear(_, d) => *d,
+            }
+        }
+
+        pub fn month(&self) -> u32 {
+            match self {
+                Self::KnownYear(d) => d.month(),
+                Self::UnknownYear(m, _) => *m,
+            }
+        }
     }
 
 }
