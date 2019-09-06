@@ -2,8 +2,10 @@ extern crate chrono;
 extern crate serde;
 extern crate serde_yaml;
 
+/// Parsers for MDLog related formats
 pub mod parser;
 
+/// Types representing MDLog data
 pub mod types {
     use chrono::naive::{NaiveDate, NaiveTime};
     use chrono::Datelike;

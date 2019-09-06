@@ -22,10 +22,12 @@ pub mod tag {
     pub const EVT_PLAIN: &str = "EVT: ";
 }
 
-const LINE_END_LINUX: &str = "\n";
-const LINE_END_WINDOWS: &str = "\r\n";
+pub const LINE_END_LINUX: &str = "\n";
+pub const LINE_END_WINDOWS: &str = "\r\n";
 
-struct Parser {
+/// Parser for tagged markdown files.  
+/// Supports both linux and windows line endings.
+pub struct MDLogParser {
     line_end: String,
     unit_ends: [String; 4],
     task_tag_todo: String,
@@ -34,8 +36,9 @@ struct Parser {
     day_tag: String,
 }
 
-impl Parser {
-    fn from_line_end(line_end: &str) -> Parser {
+impl MDLogParser {
+    /// Create a new parser based on the given line end.
+    pub fn from_line_end(line_end: &str) -> Self {
         let le = line_end.to_owned();
         let task_tag_todo = le.clone() + tag::ITEM + tag::TODO;
         let task_tag_done = le.clone() + tag::ITEM + tag::DONE;
@@ -55,7 +58,7 @@ impl Parser {
             le.clone() + tag::WEEK,
         ];
 
-        Parser {
+        Self {
             line_end: le,
             unit_ends,
             task_tag_done,
@@ -65,6 +68,7 @@ impl Parser {
         }
     }
 
+    /// Parse events
     pub fn parse_events(&self, log_data: &str) -> io::Result<Vec<Event>> {
         let mut events = vec![];
         for (start, _) in log_data.match_indices(&self.event_tag) {
@@ -216,7 +220,6 @@ impl Parser {
         Ok(tasks)
     }
 
-    // helpers
     fn lookup_date(&self, s: &str, lookup_from: usize) -> io::Result<NaiveDate> {
         let day_line = {
             let day = s[..lookup_from].rfind(&self.day_tag).unwrap() + 1;
@@ -307,7 +310,7 @@ pub fn load_birthday_file(path: &Path) -> io::Result<Vec<Person>> {
 /// ];
 ///
 /// // the yaml parser does not guarantee ordering of the output so we need to compare
-/// // this in rather clunkily
+/// // this rather clunkily
 /// correct.iter()
 ///   .for_each(|r|{ println!("{:?}",r); assert!(peops.iter().any(|c| c.eq(r) ) )});
 /// # }
@@ -316,7 +319,7 @@ pub fn parse_people(s: &str) -> io::Result<Vec<Person>> {
     let begin_presents = s.find("# Presents");
 
     let birthdays = {
-        let bd_entries_end = begin_presents.unwrap_or(s.len());
+        let bd_entries_end = begin_presents.unwrap_or_else(||s.len());
         &s[..bd_entries_end]
     };
 
@@ -446,7 +449,7 @@ mod test {
             [mon, wed, sun]
         };
 
-        let p = Parser::from_line_end(LINE_END_LINUX);
+        let p = MDLogParser::from_line_end(LINE_END_LINUX);
 
         let parsed = p.parse_events(EXAMPLE_DATA).unwrap();
 
@@ -499,7 +502,7 @@ mod test {
             [mon, tue, thu, sat]
         };
 
-        let p = Parser::from_line_end(LINE_END_LINUX);
+        let p = MDLogParser::from_line_end(LINE_END_LINUX);
 
         let tasks = p.parse_tasks(&EXAMPLE_DATA).unwrap();
 
