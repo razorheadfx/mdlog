@@ -8,7 +8,6 @@ pub mod types {
     use chrono::naive::{NaiveDate, NaiveTime};
     use chrono::Datelike;
     use serde::{Deserialize, Serialize};
-    use std::hash::Hash;
 
     #[derive(Serialize, Hash, Clone, Deserialize, Eq, PartialEq, Debug)]
     pub struct Person {

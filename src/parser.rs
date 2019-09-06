@@ -270,7 +270,6 @@ pub fn load_birthday_file(path: &Path) -> io::Result<Vec<Person>> {
 /// # fn main(){
 /// use mdlog::types::{Person, Birthday};
 /// use mdlog::parser::parse_people;
-/// use std::collections::HashSet;
 /// use chrono::naive::NaiveDate;
 ///
 /// let file_content = "
@@ -287,10 +286,9 @@ pub fn load_birthday_file(path: &Path) -> io::Result<Vec<Person>> {
 ///Bob Smith:
 ///- Bazooka
 ///";
-/// // the yaml parser does not guarantee ordering of the output so we need to compare
-/// // this via a set
-/// let peops : HashSet<Person> = parse_people(&file_content).unwrap().into_iter().collect();
-/// let correct : HashSet<Person> = [
+/// let peops = parse_people(&file_content).unwrap();
+///
+/// let correct = [
 ///     Person{
 ///         name: "Alex".into(),
 ///         birthday: Birthday::KnownYear(NaiveDate::from_ymd(2001,01,19)),
@@ -306,8 +304,12 @@ pub fn load_birthday_file(path: &Path) -> io::Result<Vec<Person>> {
 ///         birthday: Birthday::KnownYear(NaiveDate::from_ymd(1947,12,21)),
 ///         presents : None
 ///     }
-/// ].iter().cloned().collect();
-/// assert_eq!(&peops, &correct);
+/// ];
+///
+/// // the yaml parser does not guarantee ordering of the output so we need to compare
+/// // this in rather clunkily
+/// correct.iter()
+///   .for_each(|r|{ println!("{:?}",r); assert!(peops.iter().any(|c| c.eq(r) ) )});
 /// # }
 /// ```
 pub fn parse_people(s: &str) -> io::Result<Vec<Person>> {
