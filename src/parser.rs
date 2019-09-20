@@ -319,7 +319,7 @@ pub fn parse_people(s: &str) -> io::Result<Vec<Person>> {
     let begin_presents = s.find("# Presents");
 
     let birthdays = {
-        let bd_entries_end = begin_presents.unwrap_or_else(||s.len());
+        let bd_entries_end = begin_presents.unwrap_or_else(|| s.len());
         &s[..bd_entries_end]
     };
 
